@@ -48,11 +48,30 @@ const GameController = (function(){
   const player1 = 'X';
   const player2 = 'O';
   let currentPlayer = 'X';
+  let currentRound = 1;
+  let winner = '';
 
   const playRound = function(cell){
-    const validMove = GameBoard.setCell( cell - 1,currentPlayer);
+    if (winner) return;
+    const validMove = GameBoard.setCell( cell, currentPlayer);
     if (!validMove) return;
+
+    if (currentRound++ >= 5) checkIfWinner();
     currentPlayer = currentPlayer == player1 ? player2 : player1;
+  }
+
+  const checkIfWinner = function(){
+    const board = GameBoard.getBoard();
+    if (board[0][0] === board[0][1] && board[0][0] === board[0][2] && board[0][0] !== '' ||
+        board[1][0] === board[1][1] && board[1][0] === board[1][2] && board[1][0] !== '' || 
+        board[2][0] === board[2][1] && board[2][0] === board[2][2] && board[2][0] !== '' || 
+        board[0][0] === board[1][0] && board[0][0] === board[2][0] && board[0][0] !== '' ||
+        board[0][1] === board[1][1] && board[0][1] === board[2][1] && board[0][1] !== '' ||
+        board[0][2] === board[1][2] && board[0][2] === board[2][2] && board[0][2] !== '' ||
+        board[0][0] === board[1][1] && board[0][0] === board[2][2] && board[0][0] !== '' ||
+        board[2][0] === board[1][1] && board[2][0] === board[0][2] && board[2][0] !== '' ) {
+      winner = currentPlayer;
+    }
   }
 
   return { playRound };
@@ -68,17 +87,31 @@ const ScreenUpdater = (function (){
   }
 
   const renderBoard = function(){
+    boardElement.textContent = '';
     const board = GameBoard.getBoard();
     let count = 0;
     for ( let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
         const cell = document.createElement('button');
+        cell.textContent = GameBoard.getBoard()[i][j];
         cell.classList.add('cell');
+        if (cell.textContent !== '') cell.classList.add('set');
         cell.dataset.index = count++;
         boardElement.appendChild(cell);
       }
     }
+    addCellListeners();
+  }
+
+  const addCellListeners = function(){
+    const cellElements = document.querySelectorAll('.cell');
+    cellElements.forEach( cell => cell.addEventListener('click', () => {
+      GameController.playRound( +cell.dataset.index );
+      renderBoard();
+    }))
   }
 
   return { renderBoard, resetBoard };
 })();
+
+ScreenUpdater.renderBoard();

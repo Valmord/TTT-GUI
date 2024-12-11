@@ -23,6 +23,10 @@ h1 {
 .cell {
   background-color: aquamarine;
   border: 2px solid black;
+  font-size: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .cell:hover:not(.set) {

@@ -4,7 +4,6 @@ const GameBoard = (function() {
   const board = [];
 
   const setupBoard = function(){
-    console.log(board);
       for (let row = 0; row < ROWS; row++) {
       board[row] = [];
       for (let col = 0; col < COLS; col++) {
@@ -57,7 +56,8 @@ const GameController = (function(){
     const validMove = GameBoard.setCell( cell, currentPlayer);
     if (!validMove) return;
 
-    if (currentRound++ >= 5) checkIfWinner();
+    if (currentRound >= 5) checkIfWinner();
+    currentRound++;
     currentPlayer = currentPlayer == player1 ? player2 : player1;
   }
 
@@ -79,7 +79,7 @@ const GameController = (function(){
         board[2][0] === board[1][1] && board[2][0] === board[0][2] && board[2][0] !== '' ) {
       winner = currentPlayer;
       ScreenUpdater.displayResults(winner, currentRound);
-    } else if (currentRound === 9) ScreenUpdater.displayResults('', currentRound);
+    } else if (currentRound === 9) ScreenUpdater.displayResults('Tie', currentRound);
   }
 
   return { playRound, reset };
@@ -129,7 +129,7 @@ const ScreenUpdater = (function (){
     displayBoard();
   })
 
-  const displayResults = function(results = 'Tie', round){
+  const displayResults = function(results, round){
     if (results === 'Tie') resultsElement.textContent = "It's a tie";
     else resultsElement.textContent = `${results} wins, on round ${round}!`;
     playAgainBut.classList.toggle('hidden');

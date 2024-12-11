@@ -4,6 +4,7 @@ const GameBoard = (function() {
   const board = [];
 
   const setupBoard = function(){
+    console.log(board);
       for (let row = 0; row < ROWS; row++) {
       board[row] = [];
       for (let col = 0; col < COLS; col++) {
@@ -41,7 +42,7 @@ const GameBoard = (function() {
     return true;
   }
 
-  return {getBoard, printBoard, setCell, setupBoard};
+  return {getBoard, setCell, setupBoard};
 })();
 
 const GameController = (function(){
@@ -52,12 +53,18 @@ const GameController = (function(){
   let winner = '';
 
   const playRound = function(cell){
-    if (winner) return;
+    if (winner || currentRound > 9) return;
     const validMove = GameBoard.setCell( cell, currentPlayer);
     if (!validMove) return;
 
     if (currentRound++ >= 5) checkIfWinner();
     currentPlayer = currentPlayer == player1 ? player2 : player1;
+  }
+
+  const reset = function(){
+    currentRound = 1;
+    winner = '';
+    currentPlayer = 'X';
   }
 
   const checkIfWinner = function(){
@@ -71,22 +78,27 @@ const GameController = (function(){
         board[0][0] === board[1][1] && board[0][0] === board[2][2] && board[0][0] !== '' ||
         board[2][0] === board[1][1] && board[2][0] === board[0][2] && board[2][0] !== '' ) {
       winner = currentPlayer;
-    }
+      ScreenUpdater.displayResults(winner, currentRound);
+    } else if (currentRound === 9) ScreenUpdater.displayResults('', currentRound);
   }
 
-  return { playRound };
+  return { playRound, reset };
 
 })();
 
 const ScreenUpdater = (function (){
   const boardElement = document.querySelector('.board');
+  const resultsElement = document.querySelector('.results')
 
   const resetBoard = function(){
+    resultsElement.textContent = '';
     boardElement.textContent = '';
+    playAgainBut.classList.toggle('hidden');
+    GameController.reset();
     GameBoard.setupBoard();
   }
 
-  const renderBoard = function(){
+  const displayBoard = function(){
     boardElement.textContent = '';
     const board = GameBoard.getBoard();
     let count = 0;
@@ -107,11 +119,24 @@ const ScreenUpdater = (function (){
     const cellElements = document.querySelectorAll('.cell');
     cellElements.forEach( cell => cell.addEventListener('click', () => {
       GameController.playRound( +cell.dataset.index );
-      renderBoard();
+      displayBoard();
     }))
   }
 
-  return { renderBoard, resetBoard };
+  const playAgainBut = document.querySelector('.play-again');
+  playAgainBut.addEventListener('click', () => {
+    resetBoard();
+    displayBoard();
+  })
+
+  const displayResults = function(results = 'Tie', round){
+    if (results === 'Tie') resultsElement.textContent = "It's a tie";
+    else resultsElement.textContent = `${results} wins, on round ${round}!`;
+    playAgainBut.classList.toggle('hidden');
+  }
+
+  return { displayBoard, displayResults };
 })();
 
-ScreenUpdater.renderBoard();
+// Code execution starts here
+ScreenUpdater.displayBoard();

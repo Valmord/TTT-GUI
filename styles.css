@@ -33,3 +33,21 @@ h1 {
   background-color: blueviolet;
   cursor: pointer;
 }
+
+.hidden {
+  display: none;
+}
+
+.play-again {
+  margin-top: 15px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 2px solid black;
+  background-color: chocolate;
+}
+
+.results {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 10px;
+}

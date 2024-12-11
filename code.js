@@ -29,19 +29,16 @@ const GameBoard = (function() {
     }
   }
 
-  const setCell = function(cell, move){
-    // Cell 0-2 are row 1, 3-5 are row 2 etc.
-    const row = Math.floor(cell/3);
-    const col = cell % 3;
-  
-    if (board[row][col]) {
-      return false; 
-    }
-    board[row][col] = move;
-    return true;
+  const checkIfValidCell = function(row, col){
+    const result = board[row][col];
+    return !result;
   }
 
-  return {getBoard, setCell, setupBoard};
+  const setCell = function(row, col, move){
+    board[row][col] = move;
+  }
+
+  return {getBoard, setCell, setupBoard, checkIfValidCell};
 })();
 
 const GameController = (function(){
@@ -50,16 +47,44 @@ const GameController = (function(){
   let currentPlayer = 'X';
   let currentRound = 1;
   let winner = '';
+  let gameMode = 'pvm';
 
   const playRound = function(cell){
-    if (winner || currentRound > 9) return;
-    const validMove = GameBoard.setCell( cell, currentPlayer);
-    if (!validMove) return;
+    const row = getRow(cell);
+    const col = getColumn(cell);
+    if (winner || currentRound > 9 || !GameBoard.checkIfValidCell(row,col) ) return;
+
+    GameBoard.setCell(row,col, currentPlayer);
 
     if (currentRound >= 5) checkIfWinner();
+    if (winner || currentRound >= 9) return true;
     currentRound++;
     currentPlayer = currentPlayer == player1 ? player2 : player1;
+
+    if (currentPlayer === player2 && gameMode === 'pvm') {
+      const aiCell = getAiMove();
+      playRound(aiCell);
+    }
+    return true;
   }
+
+  const getRow = function(cell){
+    return Math.floor(cell/3);
+  }
+
+  const getColumn = function(cell){
+    return col = cell % 3;
+  }
+
+  const getAiMove = function(){
+    while(true){
+      const cell = Math.floor(Math.random()*9);
+      const row = getRow(cell);
+      const col = getColumn(cell);
+      if (GameBoard.checkIfValidCell(row,col)) return cell;
+    }
+  }
+
 
   const reset = function(){
     currentRound = 1;
@@ -118,8 +143,8 @@ const ScreenUpdater = (function (){
   const addCellListeners = function(){
     const cellElements = document.querySelectorAll('.cell');
     cellElements.forEach( cell => cell.addEventListener('click', () => {
-      GameController.playRound( +cell.dataset.index );
-      displayBoard();
+      const validMove = GameController.playRound( +cell.dataset.index );
+      if (validMove) displayBoard();
     }))
   }
 
@@ -127,6 +152,19 @@ const ScreenUpdater = (function (){
   playAgainBut.addEventListener('click', () => {
     resetBoard();
     displayBoard();
+  })
+
+  const gameModeBut = document.querySelector('.game-mode');
+  gameModeBut.addEventListener('click', () => {
+    if (gameModeBut.classList.contains('pvp')){
+      gameModeBut.classList.remove('pvp');
+      gameModeBut.classList.add('pvm');
+      gameModeBut.textContent = 'Player vs Machine';
+    } else {
+      gameModeBut.classList.add('pvp');
+      gameModeBut.classList.remove('pvm');
+      gameModeBut.textContent = 'Player vs Player';
+    }
   })
 
   const displayResults = function(results, round){

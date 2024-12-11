@@ -47,9 +47,9 @@ const GameController = (function(){
   let currentPlayer = 'X';
   let currentRound = 1;
   let winner = '';
-  let gameMode = 'pvm';
 
   const playRound = function(cell){
+    const gameMode = getGameMode();
     const row = getRow(cell);
     const col = getColumn(cell);
     if (winner || currentRound > 9 || !GameBoard.checkIfValidCell(row,col) ) return;
@@ -66,6 +66,12 @@ const GameController = (function(){
       playRound(aiCell);
     }
     return true;
+  }
+
+  const getGameMode = function(){
+    const gameMode = document.querySelector('.game-mode');
+    if (gameMode.classList.contains('pvp')) return 'pvp';
+    return 'pvm';
   }
 
   const getRow = function(cell){
@@ -165,6 +171,8 @@ const ScreenUpdater = (function (){
       gameModeBut.classList.remove('pvm');
       gameModeBut.textContent = 'Player vs Player';
     }
+    resetBoard();
+    displayBoard();
   })
 
   const displayResults = function(results, round){
